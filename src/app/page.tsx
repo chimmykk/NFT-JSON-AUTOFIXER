@@ -1,5 +1,5 @@
-import FileUploader from '../../components/FileUploader';
-import JsonAutoFixer from '../../components/JsonAutoFixer'; // Import the new component
+import FileUploader from '../components/Fileuploader';
+import JsonAutoFixer from '../components/JsonAutoFixer'; // Import the new component
 
 export default function Home() {
   return (
