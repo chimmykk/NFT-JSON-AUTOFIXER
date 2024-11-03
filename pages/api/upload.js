@@ -11,11 +11,11 @@ export const config = {
 // Configure multer for memory storage
 const upload = multer({ storage: multer.memoryStorage() });
 
-const MAX_BATCH_SIZE = 3 * 1024 * 1024; // Maximum batch size of 3MB
+const MAX_BATCH_SIZE = 4 * 1024 * 1024; // 4MB limit for each batch
 
 const handler = async (req, res) => {
   upload.array('files')(req, res, async (err) => {
-    if (err) return res.status(500).json({ message: 'File upload failed', error: err.message });
+    if (err) return res.status(500).json({ message: 'File upload failed' });
 
     try {
       const jsonFiles = [];
@@ -43,55 +43,29 @@ const handler = async (req, res) => {
       });
 
       const results = [];
-      const batches = []; // To store batches of files
       let currentBatch = [];
       let currentBatchSize = 0;
 
       // Create batches based on file sizes
-      for (const file of jsonFiles) {
-        currentBatch.push(file);
-        currentBatchSize += file.size;
+      for (const jsonFile of jsonFiles) {
+        const fileSize = jsonFile.size;
 
-        if (currentBatchSize >= MAX_BATCH_SIZE) {
-          batches.push(currentBatch);
-          currentBatch = [];
-          currentBatchSize = 0;
+        // Check if adding the current file exceeds the batch size
+        if (currentBatchSize + fileSize > MAX_BATCH_SIZE) {
+          // Process the current batch before adding the new file
+          await processBatch(currentBatch, imageFiles, nftName, description, jsonFolder, imageFolder, results);
+          currentBatch = []; // Reset current batch
+          currentBatchSize = 0; // Reset size
         }
+
+        // Add the file to the current batch
+        currentBatch.push(jsonFile);
+        currentBatchSize += fileSize;
       }
+
+      // Process any remaining files in the last batch
       if (currentBatch.length > 0) {
-        batches.push(currentBatch); // Push the last batch if it exists
-      }
-
-      // Process each batch
-      for (const batch of batches) {
-        for (let i = 0; i < batch.length; i++) {
-          const jsonFile = batch[i];
-          const jsonData = JSON.parse(jsonFile.buffer.toString());
-
-          // Update JSON fields
-          jsonData.name = `${nftName} #${i}`;
-          jsonData.description = description;
-          jsonData.attributes = [];
-
-          // Handle image file renaming
-          const imageFileName = `${i}.png`;
-          const imageFile = imageFiles[imageFileName];
-
-          if (imageFile) {
-            const outputPath = path.join(imageFolder, imageFileName);
-            fs.writeFileSync(outputPath, imageFile.buffer);
-            jsonData.image = imageFileName;
-          } else {
-            jsonData.image = 'default.png';
-          }
-
-          jsonData.tokenId = i;
-          const jsonFileName = `${i}.json`;
-          const jsonOutputPath = path.join(jsonFolder, jsonFileName);
-          fs.writeFileSync(jsonOutputPath, JSON.stringify(jsonData, null, 2));
-
-          results.push({ jsonFileName, imagePath: jsonData.image });
-        }
+        await processBatch(currentBatch, imageFiles, nftName, description, jsonFolder, imageFolder, results);
       }
 
       res.status(200).json({
@@ -103,6 +77,41 @@ const handler = async (req, res) => {
       res.status(500).json({ message: 'Error processing files', error: error.message });
     }
   });
+};
+
+// Function to process each batch
+const processBatch = async (batch, imageFiles, nftName, description, jsonFolder, imageFolder, results) => {
+  for (let i = 0; i < batch.length; i++) {
+    const jsonFile = batch[i];
+    const jsonData = JSON.parse(jsonFile.buffer.toString());
+
+    // Update the name and description in the JSON
+    jsonData.name = `${nftName} #${i}`;
+    jsonData.description = description;
+    jsonData.attributes = [];
+
+    // Rename images to match index
+    const imageFileName = `${i}.png`;
+    const imageFile = imageFiles[imageFileName];
+
+    if (imageFile) {
+      const outputPath = path.join(imageFolder, imageFileName);
+      fs.writeFileSync(outputPath, imageFile.buffer);
+      jsonData.image = imageFileName; // Only store the image filename
+    } else {
+      jsonData.image = 'default.png'; // Use a default filename if no image is found
+    }
+
+    // Set the token ID to the current index
+    jsonData.tokenId = i;
+
+    // Save the updated JSON file
+    const jsonFileName = `${i}.json`;
+    const jsonOutputPath = path.join(jsonFolder, jsonFileName);
+    fs.writeFileSync(jsonOutputPath, JSON.stringify(jsonData, null, 2));
+
+    results.push({ jsonFileName, imagePath: jsonData.image });
+  }
 };
 
 export default handler;
