@@ -11,7 +11,6 @@ const JsonAutoFixer = () => {
   const [jsonFiles, setJsonFiles] = useState([]);
   const [attributes, setAttributes] = useState([{ trait_type: '', value: '' }]);
 
-
   const handleGenerateJson = () => {
     const startId = parseInt(startTokenId);
     const numImages = parseInt(numberOfImages);
@@ -137,20 +136,28 @@ const JsonAutoFixer = () => {
         <button onClick={handleGenerateJson} style={{ marginTop: '10px', background: '#28a745', color: '#fff', padding: '10px', borderRadius: '4px', border: 'none' }}>
           Generate JSON
         </button>
-
         <br />
         <button onClick={handleDownloadJson} style={{ marginTop: '10px', background: '#17a2b8', color: '#fff', padding: '10px', borderRadius: '4px', border: 'none' }}>
           Download JSON as ZIP
         </button>
       </div>
 
-      <div style={{ flex: 1, paddingLeft: '20px', background: '#f0f0f0', borderRadius: '8px', padding: '10px', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)' }}>
-        <h3 style={{ textAlign: 'center' }}>Generated JSON Files</h3>
-        <ul>
-          {jsonFiles.map(({ fileName }, index) => (
-            <li key={index}>{fileName}</li>
-          ))}
-        </ul>
+      <div style={{ flex: 1, paddingLeft: '20px', background: '#f0f0f0', borderRadius: '8px', padding: '10px', maxHeight: '500px', overflowY: 'auto' }}>
+        <h3 style={{ textAlign: 'center' }}>JSON Preview</h3>
+        <pre style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word', color: '#333' }}>
+          {jsonFiles.length > 0 ? (
+            jsonFiles.map(({ fileName, data }) => (
+              <div key={fileName}>
+                <strong>{fileName}:</strong>
+                <br />
+                {JSON.stringify(data, null, 2)}
+                <hr />
+              </div>
+            ))
+          ) : (
+            <div>No JSON generated yet.</div>
+          )}
+        </pre>
       </div>
     </div>
   );
