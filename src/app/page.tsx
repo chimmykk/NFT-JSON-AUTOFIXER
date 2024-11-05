@@ -8,7 +8,7 @@ export default function Home() {
       <p style={{ fontSize: '1.2rem', marginBottom: '30px' }}>
         Upload your folder containing JSON files and images.
       </p>
-      <FileUploader />
+      {/* <FileUploader /> */}
       <JsonAutoFixer /> {/* Include the new component here */}
       <footer style={{ marginTop: '50px', fontSize: '0.9rem', color: '#777' }}>
         <p>&copy; {new Date().getFullYear()} MintPad. All rights reserved.</p>
