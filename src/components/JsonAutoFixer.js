@@ -42,43 +42,6 @@ const JsonAutoFixer = () => {
     alert('JSON files generated successfully!');
   };
 
-  const handleUploadJson = (event) => {
-    const file = event.target.files[0];
-    if (!file) {
-      alert('Please upload a JSON file.');
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const jsonContent = JSON.parse(e.target.result);
-
-        if (Array.isArray(jsonContent)) {
-          const generatedJsonFiles = jsonContent.map((data, index) => ({
-            fileName: `${index}.json`,
-            data: {
-              ...data,
-              name: data.name || `${nftName} #${index}`,
-              description: data.description || description,
-              attributes: data.attributes && Array.isArray(data.attributes) 
-                ? data.attributes 
-                : attributes,
-            },
-          }));
-          
-          setJsonFiles(generatedJsonFiles);
-          alert('JSON files generated from uploaded array successfully!');
-        } else {
-          alert('Uploaded JSON file is not an array.');
-        }
-      } catch (error) {
-        alert('Error parsing JSON file: ' + error.message);
-      }
-    };
-    reader.readAsText(file);
-  };
-
   const handleDownloadJson = () => {
     if (jsonFiles.length === 0) {
       alert('No JSON files to download.');
@@ -175,14 +138,6 @@ const JsonAutoFixer = () => {
           Generate JSON
         </button>
 
-        {/* Upload JSON Button */}
-        <input 
-          type="file" 
-          accept=".json" 
-          onChange={handleUploadJson}
-          style={{ marginTop: '20px', padding: '10px', borderRadius: '4px', border: '1px solid #ccc', background: '#000', color: '#fff' }}
-        />
-        
         <br />
         <button onClick={handleDownloadJson} style={{ marginTop: '10px', background: '#17a2b8', color: '#fff', padding: '10px', borderRadius: '4px', border: 'none' }}>
           Download JSON as ZIP
