@@ -10,7 +10,7 @@ const JsonAutoFixer = () => {
   const [description, setDescription] = useState('');
   const [jsonFiles, setJsonFiles] = useState([]);
   const [attributes, setAttributes] = useState([{ trait_type: '', value: '' }]);
-  const [uploadedJson, setUploadedJson] = useState(null);
+
 
   const handleGenerateJson = () => {
     const startId = parseInt(startTokenId);
